@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"xh-blog/utils/setting"
-	"xh-blog/routers"
+	"xhblog/utils/setting"
+	"xhblog/routers"
 )
 
 func main() {

@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"sketch/utils/e"
+	"xhblog/utils/e"
 )
 
 type Gin struct {

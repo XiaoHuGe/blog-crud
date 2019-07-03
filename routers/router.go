@@ -2,8 +2,9 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"xh-blog/controller/v1/tag"
-	"xh-blog/utils/setting"
+	"xhblog/controller/v1/tag"
+	"xhblog/utils/setting"
+	"xhblog/controller/v1/article"
 )
 
 func InitRouter() *gin.Engine {
@@ -29,6 +30,17 @@ func InitRouter() *gin.Engine {
 		apiv1.PUT("tag/:id", tag.EditTag)
 		// 删除标签
 		apiv1.DELETE("tag/:id", tag.DeleteTag)
+
+		// 获取文章列表
+		apiv1.GET("articles", article.GetArticles)
+		// 获取指定文章
+		apiv1.GET("article/:id", article.GetArticle)
+		// 新建标签
+		apiv1.POST("article", article.AddArticle)
+		// 修改标签
+		apiv1.PUT("article/:id", article.EditArticle)
+		// 删除标签
+		apiv1.DELETE("article/:id", article.DeleteArticle)
 	}
 
 	return r

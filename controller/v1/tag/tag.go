@@ -6,11 +6,11 @@ import (
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"xh-blog/models"
-	"xh-blog/utils/app"
-	"xh-blog/utils/e"
-	"xh-blog/utils/setting"
-	"xh-blog/utils/util"
+	"xhblog/models"
+	"xhblog/utils/app"
+	"xhblog/utils/e"
+	"xhblog/utils/setting"
+	"xhblog/utils/util"
 )
 
 //获取多个文章标签
@@ -96,7 +96,7 @@ func EditTag(ctx *gin.Context)  {
 	}
 	valid.Required(id, "id").Message("id不能为空")
 	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
-	valid.MaxSize(modifiedBy, 20, "modified_by").Message("名称最多为20")
+	valid.MaxSize(modifiedBy, 20, "modified_by").Message("修改人长度最多为20")
 	valid.MaxSize(name, 20, "name").Message("名称最多为20")
 
 	code := e.INVALID_PARAMS

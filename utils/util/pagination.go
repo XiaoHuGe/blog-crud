@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/Unknwon/com"
 	"github.com/gin-gonic/gin"
-	"xh-blog/utils/setting"
+	"xhblog/utils/setting"
 )
 
 func GetPage(c *gin.Context) int {

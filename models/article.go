@@ -9,25 +9,26 @@ type Article struct {
 	Model
 
 	TagID int `json:"tag_id" gorm:"index"`
-	Tag Tag `json:"tag"`
+	Tag   Tag `json:"tag"`
 
-	Title string `json:"title"`
-	Desc string `json:"desc"`
-	Content string `json:"content"`
-	CreatedBy string `json:"created_by"`
+	Title      string `json:"title"`
+	Desc       string `json:"desc"`
+	Content    string `json:"content"`
+	CreatedBy  string `json:"created_by"`
 	ModifiedBy string `json:"modified_by"`
-	State int `json:"state"`
+	State      int    `json:"state"`
 }
 
-func (this *Article)BeforeCreate(scope *gorm.Scope) error {
+func (this *Article) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("CreatedOn", time.Now().Unix())
 	return nil
 }
 
-func (this *Article)BeforeUpdate(scope *gorm.Scope) error {
+func (this *Article) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 	return nil
 }
+
 // 查询ID是否存在
 func ExistArticleByID(id int) bool {
 	var article Article
@@ -72,12 +73,12 @@ func DeleteArticle(id int) bool {
 // 新建文章
 func AddArticle(data map[string]interface{}) bool {
 	db.Create(&Article{
-		TagID:data["tag_id"].(int),
-		Title:data["title"].(string),
-		Desc:data["desc"].(string),
-		Content:data["content"].(string),
-		CreatedBy:data["created_by"].(string),
-		State:data["state"].(int),
+		TagID:     data["tag_id"].(int),
+		Title:     data["title"].(string),
+		Desc:      data["desc"].(string),
+		Content:   data["content"].(string),
+		CreatedBy: data["created_by"].(string),
+		State:     data["state"].(int),
 	})
 	return true
 }

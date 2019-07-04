@@ -7,11 +7,11 @@ import (
 
 type Tag struct {
 	Model
-	
-	Name string `json:"name"`
-	CreatedBy string `json:"created_by"`
+
+	Name       string `json:"name"`
+	CreatedBy  string `json:"created_by"`
 	ModifiedBy string `json:"modified_by"`
-	State int `json:"state"`
+	State      int    `json:"state"`
 }
 
 func ExistTagByName(name string) bool {
@@ -32,20 +32,20 @@ func ExistTagById(id int) bool {
 	return false
 }
 
-func GetTagTotal(maps interface {}) (count int){
+func GetTagTotal(maps interface{}) (count int) {
 	db.Model(&Tag{}).Where(maps).Count(&count)
 	return
 }
 
-func GetTags(pageNum int, pageSize int, maps interface {}) (tags []Tag) {
+func GetTags(pageNum int, pageSize int, maps interface{}) (tags []Tag) {
 	db.Where(maps).Offset(pageNum).Limit(pageSize).Find(&tags)
 	return
 }
 
 func AddTag(name string, status int, createdBy string) bool {
 	db.Create(&Tag{
-		Name: name,
-		State: status,
+		Name:      name,
+		State:     status,
 		CreatedBy: createdBy,
 	})
 	return true
@@ -62,12 +62,12 @@ func DeleteTag(id int) bool {
 }
 
 // gorm的Callbacks 会自动添加创建时间
-func (this *Tag)BeforeCreate(scope *gorm.Scope) error {
+func (this *Tag) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("CreatedOn", time.Now().Unix())
 	return nil
 }
 
-func (this *Tag)BeforeUpdate(scope *gorm.Scope) error {
+func (this *Tag) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 	return nil
 }

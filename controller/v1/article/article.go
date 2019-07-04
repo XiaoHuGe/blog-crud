@@ -13,9 +13,10 @@ import (
 )
 
 type D map[string]interface{}
+
 // 获取多个文章
 func GetArticles(ctx *gin.Context) {
-	G := &app.Gin{C:ctx}
+	G := &app.Gin{C: ctx}
 	data := make(map[string]interface{})
 	maps := make(map[string]interface{})
 	valid := validation.Validation{}
@@ -52,13 +53,13 @@ func GetArticles(ctx *gin.Context) {
 
 // 获取单个文章
 func GetArticle(ctx *gin.Context) {
-	G := app.Gin{C:ctx}
+	G := app.Gin{C: ctx}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
 
 	valid := validation.Validation{}
 	valid.Required(id, "id").Message("id不能为空")
-	valid.Min(id,1, "id").Message("id必须大于0")
+	valid.Min(id, 1, "id").Message("id必须大于0")
 
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
@@ -84,7 +85,7 @@ func GetArticle(ctx *gin.Context) {
 
 // 新增文章
 func AddArticle(ctx *gin.Context) {
-	G := &app.Gin{C:ctx}
+	G := &app.Gin{C: ctx}
 
 	tagId := com.StrTo(ctx.Query("tag_id")).MustInt()
 	title := ctx.Query("title")
@@ -94,12 +95,12 @@ func AddArticle(ctx *gin.Context) {
 	state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
 
 	valid := validation.Validation{}
-	valid.Min(tagId,1, "tag_id").Message("标签id必须大于0")
+	valid.Min(tagId, 1, "tag_id").Message("标签id必须大于0")
 	valid.Required(title, "title").Message("标题不能为空")
 	valid.Required(desc, "desc").Message("描述不能为空")
 	valid.Required(content, "content").Message("内容不能为空")
 	valid.Required(createdBy, "created_by").Message("创建人不能为空")
-	valid.Range(state,0, 1, "state").Message("状态只能为0或1")
+	valid.Range(state, 0, 1, "state").Message("状态只能为0或1")
 
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
@@ -130,7 +131,7 @@ func AddArticle(ctx *gin.Context) {
 
 // 修改文章
 func EditArticle(ctx *gin.Context) {
-	G := app.Gin{C:ctx}
+	G := app.Gin{C: ctx}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
 	TagId := com.StrTo(ctx.Query("tag_id")).MustInt()
@@ -152,7 +153,7 @@ func EditArticle(ctx *gin.Context) {
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
 		msg := make([]string, len(valid.Errors))
-		for i, err := range valid.Errors{
+		for i, err := range valid.Errors {
 			msg[i] = err.Error()
 		}
 		G.Response(http.StatusBadRequest, code, msg)
@@ -167,11 +168,21 @@ func EditArticle(ctx *gin.Context) {
 
 	code = e.SUCCESS
 	maps := make(map[string]interface{})
-	if TagId > 0 { maps["tag_id"] = id }
-	if title != "" { maps["title"] = title }
-	if desc != "" { maps["desc"] = desc }
-	if content != "" { maps["content"] = content }
-	if modifiedBy != "" { maps["modified_by"] = modifiedBy }
+	if TagId > 0 {
+		maps["tag_id"] = id
+	}
+	if title != "" {
+		maps["title"] = title
+	}
+	if desc != "" {
+		maps["desc"] = desc
+	}
+	if content != "" {
+		maps["content"] = content
+	}
+	if modifiedBy != "" {
+		maps["modified_by"] = modifiedBy
+	}
 
 	models.EditArticle(id, maps)
 
@@ -180,19 +191,19 @@ func EditArticle(ctx *gin.Context) {
 
 // 删除文章
 func DeleteArticle(ctx *gin.Context) {
-	G := &app.Gin{C:ctx}
+	G := &app.Gin{C: ctx}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
 
 	valid := validation.Validation{}
 	valid.Required(id, "id").Message("id不能为空")
-	valid.Min(id,1, "id").Message("id必须大于0")
+	valid.Min(id, 1, "id").Message("id必须大于0")
 
 	code := e.SUCCESS
 	if valid.HasErrors() {
 		code = e.INVALID_PARAMS
 		msg := make([]string, len(valid.Errors))
-		for i, err := range valid.Errors{
+		for i, err := range valid.Errors {
 			msg[i] = err.Message
 		}
 		G.Response(http.StatusBadRequest, code, msg)

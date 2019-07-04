@@ -11,15 +11,15 @@ var (
 
 	RunMode string
 
-	HttpPort int
-	ReadTimeout time.Duration
+	HttpPort     int
+	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 
-	PageSize int
-	jwtSecret string
+	PageSize  int
+	JwtSecret string
 )
 
-func init()  {
+func init() {
 	// 加载配置文件
 	var err error
 	Cfg, err = ini.Load("conf/app.ini")
@@ -57,5 +57,5 @@ func LoadAPP() {
 	}
 
 	PageSize = sec.Key("PAGE_SIZE").MustInt(10)
-	jwtSecret = sec.Key("JWT_SECRET").MustString("!@)*#)!@U#@*!@!)")
+	JwtSecret = sec.Key("JWT_SECRET").MustString("!@)*#)!@U#@*!@!)")
 }

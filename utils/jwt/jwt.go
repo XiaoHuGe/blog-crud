@@ -16,7 +16,7 @@ type Claims struct {
 
 func GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(24 * time.Hour)
+	expireTime := nowTime.Add(3 * time.Hour)
 
 	claims := Claims{
 		username,
@@ -34,10 +34,10 @@ func GenerateToken(username, password string) (string, error) {
 }
 
 func ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, e error) {
+	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return JwtSecret, nil
 	})
-	
+
 	if tokenClaims != nil {
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
 			return claims, nil

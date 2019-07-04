@@ -1,4 +1,4 @@
-package jwt
+package xhjwt
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ import (
 	"xhblog/utils/jwt"
 )
 
-func Jwt() gin.HandlerFunc {
+func JWT() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		G := app.Gin{C: context}
 
@@ -17,14 +17,14 @@ func Jwt() gin.HandlerFunc {
 		//var data interface{}
 
 		code = e.SUCCESS
-		token := context.Query("token")
+		token := context.GetHeader("token")
 		if token == "" {
 			code = e.INVALID_PARAMS
 		} else {
 			claims, err := jwt.ParseToken(token)
 			if err != nil {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-			} else if claims.ExpiresAt < time.Now().Unix() {
+			} else if time.Now().Unix() > claims.ExpiresAt {
 				code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 			}
 		}

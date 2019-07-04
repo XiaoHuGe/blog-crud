@@ -2,9 +2,11 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"xhblog/controller/v1/tag"
-	"xhblog/utils/setting"
 	"xhblog/controller/v1/article"
+	"xhblog/controller/v1/auth"
+	"xhblog/controller/v1/tag"
+	"xhblog/middleware/xhjwt"
+	"xhblog/utils/setting"
 )
 
 func InitRouter() *gin.Engine {
@@ -20,7 +22,10 @@ func InitRouter() *gin.Engine {
 		})
 	})
 
+	r.GET("/auth", auth.GetAuth)
+
 	apiv1 := r.Group("/api/v1")
+	apiv1.Use(xhjwt.JWT())
 	{
 		// 获取标签列表
 		apiv1.GET("tags", tag.GetTags)

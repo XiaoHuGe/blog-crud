@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"xhblog/models"
 	"xhblog/utils/app"
@@ -28,7 +29,11 @@ func GetAuth(ctx *gin.Context) {
 	data := make(map[string]interface{})
 	code := e.INVALID_PARAMS
 	if ok {
-		isExist := models.CheckAuth(username, password)
+		isExist, err := models.CheckAuth(username, password)
+		if err != nil {
+			log.Println("models.CheckAuth err:", err)
+		}
+		//isExist := models.CheckAuth(username, password)
 		if isExist {
 			token, err := jwt.GenerateToken(username, password)
 			if err != nil {

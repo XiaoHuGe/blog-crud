@@ -5,15 +5,19 @@ import (
 	"github.com/fvbock/endless"
 	"log"
 	"syscall"
+	"xhblog/models"
 	"xhblog/routers"
 	"xhblog/utils/setting"
 )
 
 func main() {
-	endless.DefaultReadTimeOut = setting.ReadTimeout
-	endless.DefaultWriteTimeOut = setting.WriteTimeout
+	setting.Setup()
+	models.Setup()
+
+	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
+	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
 	endless.DefaultMaxHeaderBytes = 1 << 20
-	endlessPoint := fmt.Sprintf(":%d", setting.HttpPort)
+	endlessPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
 
 	router := routers.InitRouter()
 	server := endless.NewServer(endlessPoint, router)

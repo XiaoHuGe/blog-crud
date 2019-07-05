@@ -46,7 +46,7 @@ func GetArticles(ctx *gin.Context) {
 	}
 
 	code = e.SUCCESS
-	data["lists"] = models.GetArticles(util.GetPage(ctx), setting.PageSize, maps)
+	data["lists"] = models.GetArticles(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
 	data["total"] = models.GetArticleTotal(maps)
 	G.Response(http.StatusOK, code, data)
 }

@@ -6,7 +6,7 @@ import (
 	"xhblog/utils/setting"
 )
 
-var JwtSecret = []byte(setting.JwtSecret)
+var JwtSecret = []byte(setting.AppSetting.JwtSecret)
 
 type Claims struct {
 	Name     string `json:"name"`
@@ -16,7 +16,7 @@ type Claims struct {
 
 func GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(3 * time.Hour)
+	expireTime := nowTime.Add(5 * time.Minute)
 
 	claims := Claims{
 		username,

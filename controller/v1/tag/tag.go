@@ -32,11 +32,21 @@ func GetTags(ctx *gin.Context)  {
 		maps["state"] = state
 	}
 
-	code := e.SUCCESS
+	tags, err := models.GetTags(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_GET_TAGS_FAIL, data)
+		return
+	}
 
-	data["lists"] = models.GetTags(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
-	data["total"] = models.GetTagTotal(maps)
-	G.Response(http.StatusOK, code, data)
+	count, err := models.GetTagTotal(maps)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_COUNT_TAG_FAIL, data)
+		return
+	}
+
+	data["lists"] = tags
+	data["total"] = count
+	G.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 // 新增文章标签
@@ -66,18 +76,22 @@ func AddTag(ctx *gin.Context)  {
 	}
 
 	// 判断标签是否存在
-	if models.ExistTagByName(name) {
-		code = e.ERROR_EXIST_TAG
-	} else {
-		code = e.SUCCESS
-		models.AddTag(name, state, createdBy)
+	isExist, err := models.ExistTagByName(name)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
+		return
 	}
-	G.Response(http.StatusOK, code, nil)
-	//ctx.JSON(http.StatusOK, gin.H{
-	//	"code": code,
-	//	"msg": e.GetMsg(code),
-	//	"data": make(map[string]string),
-	//})
+	if isExist {
+		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG, nil)
+		return
+	}
+
+	err = models.AddTag(name, state, createdBy)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_ADD_TAG_FAIL, nil)
+		return
+	}
+	G.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 // 修改文章标签
@@ -109,21 +123,31 @@ func EditTag(ctx *gin.Context)  {
 		return
 	}
 
-	if models.ExistTagById(id) {
-		code = e.SUCCESS
-		data := make(map[string]interface{})
-		data["modified_by"] = modifiedBy
-		if name != "" {
-			data["name"] = name
-		}
-		if state != -1 {
-			data["state"] = state
-		}
-		models.EditTag(id, data)
-	} else {
-		code = e.ERROR_NOT_EXIST_TAG
+	isExist, err := models.ExistTagById(id)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
+		return
 	}
-	G.Response(http.StatusOK, code, nil)
+	if !isExist {
+		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["modified_by"] = modifiedBy
+	if name != "" {
+		data["name"] = name
+	}
+	if state != -1 {
+		data["state"] = state
+	}
+
+	err = models.EditTag(id, data)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_EDIT_TAG_FAIL, nil)
+		return
+	}
+	G.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 // 删除文章标签
@@ -145,9 +169,20 @@ func DeleteTag(ctx *gin.Context)  {
 		return
 	}
 
-	if models.ExistTagById(id) {
-		code = e.SUCCESS
-		models.DeleteTag(id)
+	isExist, err := models.ExistTagById(id)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
+		return
 	}
-	G.Response(http.StatusOK, code, nil)
+	if !isExist {
+		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
+
+	err = models.DeleteTag(id)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_DELETE_TAG_FAIL, nil)
+		return
+	}
+	G.Response(http.StatusOK, e.SUCCESS, nil)
 }

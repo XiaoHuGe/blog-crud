@@ -1,5 +1,7 @@
 package models
 
+import "github.com/jinzhu/gorm"
+
 type Article struct {
 	Model
 
@@ -15,57 +17,71 @@ type Article struct {
 }
 
 // 查询ID是否存在
-func ExistArticleByID(id int) bool {
+func ExistArticleByID(id int) (bool, error) {
 	var article Article
-	db.Select("id").Where("id = ?", id).First(&article)
-	if article.ID > 0 {
-		return true
+	err := db.Select("id").Where("id = ?", id).First(&article).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
 	}
-	return false
+	if article.ID > 0 {
+		return true, err
+	}
+	return false, err
 }
 
 // 获取文章总数
-func GetArticleTotal(maps interface{}) (count int) {
-	db.Model(&Article{}).Where(maps).Count(&count)
+func GetArticleTotal(maps interface{}) (count int, err error) {
+	err = db.Model(&Article{}).Where(maps).Count(&count).Error
 	return
 }
 
 // 获取文章列表
-func GetArticles(pageNum, pageSize int, maps interface{}) (articles []Article) {
-	db.Preload("Tag").Where(maps).Offset(pageNum).Limit(pageSize).Find(&articles)
-	return
+func GetArticles(pageNum, pageSize int, maps interface{}) ([]*Article, error) {
+	var articles []*Article
+	err := db.Preload("Tag").Where(maps).Offset(pageNum).Limit(pageSize).Find(&articles).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return articles, err
 }
 
 // 获取单个文章
-func GetArticle(id int) (article Article) {
-	db.Where("id = ?", id).First(&article)
-	db.Model(&article).Related(&article.Tag)
-	return
+func GetArticle(id int) (*Article, error) {
+	var article Article
+	err := db.Where("id = ?", id).First(&article).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	err = db.Model(&article).Related(&article.Tag).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return &article, nil
 }
 
 // 修改文章
-func EditArticle(id int, data interface{}) bool {
-	db.Model(&Article{}).Where("id = ?", id).Updates(data)
-	return true
+func EditArticle(id int, data interface{}) error {
+	err := db.Model(&Article{}).Where("id = ?", id).Updates(data).Error
+	return err
 }
 
 // 删除文章
-func DeleteArticle(id int) bool {
-	db.Where("id = ?", id).Delete(&Article{})
-	return true
+func DeleteArticle(id int) error {
+	err := db.Where("id = ?", id).Delete(&Article{}).Error
+	return err
 }
 
 // 新建文章
-func AddArticle(data map[string]interface{}) bool {
-	db.Create(&Article{
+func AddArticle(data map[string]interface{}) error {
+	err := db.Create(&Article{
 		TagID:     data["tag_id"].(int),
 		Title:     data["title"].(string),
 		Desc:      data["desc"].(string),
 		Content:   data["content"].(string),
 		CreatedBy: data["created_by"].(string),
 		State:     data["state"].(int),
-	})
-	return true
+	}).Error
+	return err
 }
 
 //func (this *Article) BeforeCreate(scope *gorm.Scope) error {

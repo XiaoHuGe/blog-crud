@@ -1,5 +1,10 @@
 package models
 
+import (
+	"github.com/jinzhu/gorm"
+	"xhblog/utils/logging"
+)
+
 type Tag struct {
 	Model
 
@@ -9,51 +14,68 @@ type Tag struct {
 	State      int    `gorm:"type:tinyint(3)" json:"state"`
 }
 
-func ExistTagByName(name string) bool {
+func ExistTagByName(name string) (bool, error) {
 	var tag Tag
-	db.Select("id").Where("name = ?", name).First(&tag)
-	if tag.ID > 0 {
-		return true
+	err := db.Select("id").Where("name = ?", name).First(&tag).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(err)
+		return false, err
 	}
-	return false
+	if tag.ID > 0 {
+		return true, err
+	}
+	return false, nil
 }
 
-func ExistTagById(id int) bool {
+func ExistTagById(id int) (bool, error) {
 	var tag Tag
-	db.Select("id").Where("id = ?", id).First(&tag)
-	if tag.ID > 0 {
-		return true
+	err := db.Select("id").Where("id = ?", id).First(&tag).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
 	}
-	return false
+	if tag.ID > 0 {
+		return true, err
+	}
+	return false, nil
 }
 
-func GetTagTotal(maps interface{}) (count int) {
-	db.Model(&Tag{}).Where(maps).Count(&count)
-	return
+func GetTagTotal(maps interface{}) (int, error) {
+	var count int
+	err := db.Model(&Tag{}).Where(maps).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
-func GetTags(pageNum int, pageSize int, maps interface{}) (tags []Tag) {
-	db.Where(maps).Offset(pageNum).Limit(pageSize).Find(&tags)
-	return
+func GetTags(pageNum int, pageSize int, maps interface{}) ([]*Tag, error) {
+	var tags []*Tag
+	err := db.Where(maps).Offset(pageNum).Limit(pageSize).Find(&tags).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return tags, nil
 }
 
-func AddTag(name string, status int, createdBy string) bool {
-	db.Create(&Tag{
+func AddTag(name string, status int, createdBy string) error {
+	err := db.Create(&Tag{
 		Name:      name,
 		State:     status,
 		CreatedBy: createdBy,
-	})
-	return true
+	}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func EditTag(id int, data interface{}) bool {
-	db.Model(&Tag{}).Where("id = ?", id).Updates(data)
-	return true
+func EditTag(id int, data interface{}) error {
+	return db.Model(&Tag{}).Where("id = ?", id).Updates(data).Error
+
 }
 
-func DeleteTag(id int) bool {
-	db.Where("id = ?", id).Delete(&Tag{})
-	return true
+func DeleteTag(id int) error {
+	return db.Where("id = ?", id).Delete(&Tag{}).Error
 }
 
 //// gorm的Callbacks 会自动添加创建时间

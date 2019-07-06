@@ -8,6 +8,7 @@ import (
 	"xhblog/models"
 	"xhblog/utils/app"
 	"xhblog/utils/e"
+	"xhblog/utils/logging"
 	"xhblog/utils/setting"
 	"xhblog/utils/util"
 )
@@ -45,9 +46,23 @@ func GetArticles(ctx *gin.Context) {
 		return
 	}
 
+	article, err := models.GetArticles(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
+	if err != nil {
+		logging.Error(err)
+		G.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
+		return
+	}
+
+	count, err := models.GetArticleTotal(maps)
+	if err != nil {
+		logging.Error(err)
+		G.Response(http.StatusInternalServerError, e.ERROR_COUNT_ARTICLE_FAIL, nil)
+		return
+	}
+
 	code = e.SUCCESS
-	data["lists"] = models.GetArticles(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
-	data["total"] = models.GetArticleTotal(maps)
+	data["lists"] = article
+	data["total"] = count
 	G.Response(http.StatusOK, code, data)
 }
 
@@ -56,7 +71,6 @@ func GetArticle(ctx *gin.Context) {
 	G := app.Gin{C: ctx}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
-
 	valid := validation.Validation{}
 	valid.Required(id, "id").Message("id不能为空")
 	valid.Min(id, 1, "id").Message("id必须大于0")
@@ -71,16 +85,22 @@ func GetArticle(ctx *gin.Context) {
 		return
 	}
 
-	if !models.ExistArticleByID(id) {
-		code = e.ERROR_NOT_EXIST_ARTICLE
-		G.Response(http.StatusOK, code, nil)
+	isExist, err := models.ExistArticleByID(id)
+	if !isExist {
+		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
+		return
+	}
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_ARTICLE_FAIL, nil)
 		return
 	}
 
-	code = e.SUCCESS
-	data := models.GetArticle(id)
-
-	G.Response(http.StatusOK, code, data)
+	data, err := models.GetArticle(id)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
+		return
+	}
+	G.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 // 新增文章
@@ -112,11 +132,16 @@ func AddArticle(ctx *gin.Context) {
 		return
 	}
 
-	if !models.ExistTagById(tagId) {
-		code = e.ERROR_NOT_EXIST_TAG
-		G.Response(http.StatusBadRequest, code, nil)
+	isExist, err := models.ExistTagById(tagId)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
 		return
 	}
+	if !isExist {
+		G.Response(http.StatusBadRequest, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
+
 	code = e.SUCCESS
 	data := make(D)
 	data["tag_id"] = tagId
@@ -125,7 +150,10 @@ func AddArticle(ctx *gin.Context) {
 	data["content"] = content
 	data["created_by"] = createdBy
 	data["state"] = state
-	models.AddArticle(data)
+	err = models.AddArticle(data)
+	if err != nil {
+		G.Response(http.StatusOK, e.ERROR_ADD_ARTICLE_FAIL, nil)
+	}
 	G.Response(http.StatusOK, code, nil)
 }
 
@@ -160,13 +188,16 @@ func EditArticle(ctx *gin.Context) {
 		return
 	}
 
-	if !models.ExistArticleByID(id) {
-		code = e.ERROR_NOT_EXIST_ARTICLE
-		G.Response(http.StatusBadRequest, code, nil)
+	isExist, err := models.ExistArticleByID(id)
+	if !isExist {
+		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
+		return
+	}
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_ARTICLE_FAIL, nil)
 		return
 	}
 
-	code = e.SUCCESS
 	maps := make(map[string]interface{})
 	if TagId > 0 {
 		maps["tag_id"] = id
@@ -184,9 +215,12 @@ func EditArticle(ctx *gin.Context) {
 		maps["modified_by"] = modifiedBy
 	}
 
-	models.EditArticle(id, maps)
-
-	G.Response(http.StatusOK, code, nil)
+	err = models.EditArticle(id, maps)
+	if err != nil {
+		G.Response(http.StatusOK, e.ERROR_EDIT_ARTICLE_FAIL, nil)
+		return
+	}
+	G.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 // 删除文章
@@ -210,11 +244,19 @@ func DeleteArticle(ctx *gin.Context) {
 		return
 	}
 
-	if !models.ExistArticleByID(id) {
-		code = e.ERROR_NOT_EXIST_ARTICLE
-		G.Response(http.StatusBadRequest, code, nil)
+	isExist, err := models.ExistArticleByID(id)
+	if !isExist {
+		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
 		return
 	}
-	models.DeleteArticle(id)
+	if err != nil {
+		G.Response(http.StatusInternalServerError, e.ERROR_CHECK_EXIST_ARTICLE_FAIL, nil)
+		return
+	}
+
+	err = models.DeleteArticle(id)
+	if err != nil {
+		G.Response(http.StatusOK, e.ERROR_DELETE_ARTICLE_FAIL, nil)
+	}
 	G.Response(http.StatusOK, code, nil)
 }

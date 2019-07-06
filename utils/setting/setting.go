@@ -18,7 +18,12 @@ type Application struct {
 	ImagePrefixUrl string
 	ImageSavaPath  string
 	ImageMaxSize   int
-	ImageAllowExts string
+	ImageAllowExts []string
+
+	LogSavePath string
+	LogFileName string
+	LogFileExt  string
+	TimeFormat   string
 }
 
 var AppSetting = &Application{}

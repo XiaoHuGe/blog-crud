@@ -7,16 +7,19 @@ import (
 	"syscall"
 	"xhblog/models"
 	"xhblog/routers"
+	"xhblog/utils/logging"
 	"xhblog/utils/setting"
 )
 
 func main() {
 	setting.Setup()
 	models.Setup()
+	logging.Setup()
 
 	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
 	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
 	endless.DefaultMaxHeaderBytes = 1 << 20
+	logging.Info("DefaultMaxHeaderBytes: ", 1 << 20)
 	endlessPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
 
 	router := routers.InitRouter()

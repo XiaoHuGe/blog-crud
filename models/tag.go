@@ -3,10 +3,10 @@ package models
 type Tag struct {
 	Model
 
-	Name       string `json:"name"`
-	CreatedBy  string `json:"created_by"`
-	ModifiedBy string `json:"modified_by"`
-	State      int    `json:"state"`
+	Name       string `gorm:"type:varchar(100)" json:"name"`
+	CreatedBy  string `gorm:"type:varchar(100)" json:"created_by"`
+	ModifiedBy string `gorm:"type:varchar(100)" json:"modified_by"`
+	State      int    `gorm:"type:tinyint(3)" json:"state"`
 }
 
 func ExistTagByName(name string) bool {

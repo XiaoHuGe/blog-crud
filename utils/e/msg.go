@@ -13,6 +13,12 @@ const (
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT = 20002
 	ERROR_AUTH_TOKEN = 20003
 	ERROR_AUTH = 20004
+	// 保存图片失败
+	ERROR_UPLOAD_SAVE_IMAGE_FAIL = 30001
+	// 检查图片失败
+	ERROR_UPLOAD_CHECK_IMAGE_FAIL = 30002
+	// 校验图片错误，图片格式或大小有问题
+	ERROR_UPLOAD_CHECK_IMAGE_FORMAT = 30003
 )
 
 var MsgFlags = map[int]string {
@@ -26,6 +32,8 @@ var MsgFlags = map[int]string {
 	ERROR_AUTH_CHECK_TOKEN_TIMEOUT : "Token已超时",
 	ERROR_AUTH_TOKEN : "Token生成失败",
 	ERROR_AUTH : "Token错误",
+	ERROR_UPLOAD_SAVE_IMAGE_FAIL: "保存图片失败",
+	ERROR_UPLOAD_CHECK_IMAGE_FORMAT: "校验图片错误，图片格式或大小有问题",
 }
 
 func GetMsg(code int) string  {

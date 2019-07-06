@@ -5,6 +5,7 @@ import (
 	"xhblog/controller/v1/article"
 	"xhblog/controller/v1/auth"
 	"xhblog/controller/v1/tag"
+	"xhblog/controller/v1/upload"
 	"xhblog/middleware/xhjwt"
 	"xhblog/utils/setting"
 )
@@ -28,24 +29,26 @@ func InitRouter() *gin.Engine {
 	apiv1.Use(xhjwt.JWT())
 	{
 		// 获取标签列表
-		apiv1.GET("tags", tag.GetTags)
+		apiv1.GET("/tags", tag.GetTags)
 		// 新建标签
-		apiv1.POST("tag", tag.AddTag)
+		apiv1.POST("/tag", tag.AddTag)
 		// 修改标签
-		apiv1.PUT("tag/:id", tag.EditTag)
+		apiv1.PUT("/tag/:id", tag.EditTag)
 		// 删除标签
-		apiv1.DELETE("tag/:id", tag.DeleteTag)
+		apiv1.DELETE("/tag/:id", tag.DeleteTag)
 
 		// 获取文章列表
-		apiv1.GET("articles", article.GetArticles)
+		apiv1.GET("/articles", article.GetArticles)
 		// 获取指定文章
-		apiv1.GET("article/:id", article.GetArticle)
+		apiv1.GET("/article/:id", article.GetArticle)
 		// 新建标签
-		apiv1.POST("article", article.AddArticle)
+		apiv1.POST("/article", article.AddArticle)
 		// 修改标签
-		apiv1.PUT("article/:id", article.EditArticle)
+		apiv1.PUT("/article/:id", article.EditArticle)
 		// 删除标签
-		apiv1.DELETE("article/:id", article.DeleteArticle)
+		apiv1.DELETE("/article/:id", article.DeleteArticle)
+		//上传图片
+		apiv1.POST("/upload", upload.UploadImage)
 	}
 
 	return r

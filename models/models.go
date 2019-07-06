@@ -54,6 +54,8 @@ func Setup() {
 	db.DB().SetMaxOpenConns(100)
 
 	db.AutoMigrate(&Tag{})
+	db.AutoMigrate(&Article{})
+	db.AutoMigrate(&Auth{})
 
 	db.Callback().Create().Replace("gorm:update_time_stamp", updateTimeStampForCreateCallback)
 	db.Callback().Update().Replace("gorm:update_time_stamp", updateTimeStampForUpdateCallback)

@@ -2,6 +2,7 @@ package tag
 
 import (
 	"fmt"
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
@@ -248,31 +249,34 @@ func ExportTag(ctx *gin.Context) {
 }
 
 func ImportTag(ctx *gin.Context) {
-	//G := app.Gin{C: ctx}
-	////xlsxFileHeader, err := ctx.FormFile("file")
-	////xxFile, xlsxFileHeader, err := ctx.Request.FormFile("file")
-	////if err != nil {
-	////	logging.Error(err)
-	////	G.Response(http.StatusOK, e.ERROR, nil)
-	////	return
-	////}
-	//
-	//
-	//xlFile, err := xlsx.OpenFile()
-	//if err != nil {
-	//	fmt.Println("path: ", path)
-	//	fmt.Println("err :", err)
-	//	return
-	//}
-	//for _, sheet := range xlFile.Sheets {
-	//	for _, row := range sheet.Rows {
-	//		for _, cell := range row.Cells {
-	//			text := cell.String()
-	//			fmt.Printf("%s\n", text)
-	//		}
-	//	}
-	//}
-	//G.Response(http.StatusOK, e.SUCCESS, map[string]string{
-	//	"state": "success",
-	//})
+	G := app.Gin{C: ctx}
+	file, _, err := ctx.Request.FormFile("file")
+	if err != nil {
+		logging.Error(err)
+		G.Response(http.StatusOK, e.INVALID_PARAMS, map[string]string{
+			"state": "failed",
+		})
+		return
+	}
+	xlsx, err := excelize.OpenReader(file)
+	if err != nil {
+		logging.Error(err)
+		G.Response(http.StatusOK, e.ERROR, map[string]string{
+			"state": "failed",
+		})
+		return
+	}
+	rows, err := xlsx.GetRows("标签")
+	for irow, row := range rows {
+		if irow > 0 {
+			var data []string
+			for _, cell := range row {
+				data = append(data, cell)
+			}
+			models.AddTag(data[1], 1, data[2])
+		}
+	}
+	G.Response(http.StatusOK, e.SUCCESS, map[string]string{
+		"state": "success",
+	})
 }

@@ -3,8 +3,7 @@ package cache_service
 import (
 	"strconv"
 	"strings"
-
-	"github.com/EDDYCJY/go-gin-example/pkg/e"
+	"xhblog/utils/e"
 )
 
 type Tag struct {

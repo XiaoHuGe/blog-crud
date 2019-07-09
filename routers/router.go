@@ -2,11 +2,13 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"xhblog/controller/v1/article"
 	"xhblog/controller/v1/auth"
 	"xhblog/controller/v1/tag"
 	"xhblog/controller/v1/upload"
 	"xhblog/middleware/xhjwt"
+	"xhblog/utils/file"
 	"xhblog/utils/setting"
 )
 
@@ -22,7 +24,8 @@ func InitRouter() *gin.Engine {
 			"message": "pong",
 		})
 	})
-
+	r.StaticFS("/upload/images", http.Dir(file.GetImagePath()))
+	r.StaticFS("/export", http.Dir(file.GetExclePath()))
 	r.GET("/auth", auth.GetAuth)
 
 	apiv1 := r.Group("/api/v1")
@@ -47,8 +50,12 @@ func InitRouter() *gin.Engine {
 		apiv1.PUT("/article/:id", article.EditArticle)
 		// 删除标签
 		apiv1.DELETE("/article/:id", article.DeleteArticle)
+
 		//上传图片
 		apiv1.POST("/upload", upload.UploadImage)
+
+		apiv1.POST("tags/export", tag.ExportTag)
+		apiv1.POST("tags/import", tag.ImportTag)
 	}
 
 	return r

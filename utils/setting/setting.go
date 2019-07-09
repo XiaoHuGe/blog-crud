@@ -15,10 +15,12 @@ type Application struct {
 	JwtSecret       string
 	RuntimeRootPath string
 
-	ImagePrefixUrl string
+	PrefixUrl      string
 	ImageSavaPath  string
 	ImageMaxSize   int
 	ImageAllowExts []string
+
+	ExportSavePath string
 
 	LogSavePath string
 	LogFileName string

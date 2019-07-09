@@ -40,3 +40,11 @@ func CheckImageSize(f multipart.File) bool {
 
 	return size <= setting.AppSetting.ImageMaxSize
 }
+
+func GetImagePath() string {
+	return setting.AppSetting.ImageSavaPath
+}
+
+func GetImageUrl(name string) string {
+	return setting.AppSetting.PrefixUrl + "/" + GetImagePath() + name
+}

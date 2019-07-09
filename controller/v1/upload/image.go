@@ -8,11 +8,11 @@ import (
 	"xhblog/utils/e"
 	"xhblog/utils/file"
 	"xhblog/utils/logging"
-	"xhblog/utils/setting"
 )
 
 func UploadImage(ctx *gin.Context) {
 	G := app.Gin{C: ctx}
+
 	code := e.SUCCESS
 	data := make(map[string]interface{})
 	f, image, err := ctx.Request.FormFile("image")
@@ -21,6 +21,7 @@ func UploadImage(ctx *gin.Context) {
 		code = e.ERROR
 		G.Response(http.StatusOK, code, data)
 	}
+
 	fileName := image.Filename
 	if !file.CheckImageExt(fileName) {
 		logging.Error("file.CheckImageExt err")
@@ -35,11 +36,12 @@ func UploadImage(ctx *gin.Context) {
 		return
 	}
 	fileName = file.GetImageName(image.Filename)
-	if err := ctx.SaveUploadedFile(image, setting.AppSetting.ImageSavaPath + fileName); err != nil {
+	if err := ctx.SaveUploadedFile(image, file.GetImagePath() + fileName); err != nil {
 		ctx.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %string", err.Error()))
 		return
 	}
-	data["image_url"] = setting.AppSetting.ImagePrefixUrl + "/" + setting.AppSetting.ImageSavaPath + fileName
+
+	data["image_url"] = file.GetImageUrl(fileName)
 	data["state"] = "图片上传成功！"
 	G.Response(http.StatusOK, code, data)
 }

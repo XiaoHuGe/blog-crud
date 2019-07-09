@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"xhblog/models"
+	"xhblog/service/article_service"
 	"xhblog/utils/app"
 	"xhblog/utils/e"
 	"xhblog/utils/logging"
@@ -22,7 +23,7 @@ func GetArticles(ctx *gin.Context) {
 	maps := make(map[string]interface{})
 	valid := validation.Validation{}
 
-	var state int
+	var state int = -1
 	if arg := ctx.Query("state"); arg != "" {
 		state = com.StrTo(arg).MustInt()
 		maps["state"] = state
@@ -46,17 +47,26 @@ func GetArticles(ctx *gin.Context) {
 		return
 	}
 
-	article, err := models.GetArticles(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
-	if err != nil {
-		logging.Error(err)
-		G.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
-		return
+	articleService := article_service.Article{
+		TagID:    tagId,
+		PageNum:  util.GetPage(ctx),
+		PageSize: setting.AppSetting.PageSize,
+		State:    state,
 	}
-
-	count, err := models.GetArticleTotal(maps)
+	//count, err := models.GetArticleTotal(maps)
+	count, err := articleService.GetCount()
 	if err != nil {
 		logging.Error(err)
 		G.Response(http.StatusInternalServerError, e.ERROR_COUNT_ARTICLE_FAIL, nil)
+		return
+	}
+
+	articleService.Count = count
+	article, err := articleService.GetAll()
+	//article, err := models.GetArticles(util.GetPage(ctx), setting.AppSetting.PageSize, maps)
+	if err != nil {
+		logging.Error(err)
+		G.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
 		return
 	}
 
@@ -85,7 +95,9 @@ func GetArticle(ctx *gin.Context) {
 		return
 	}
 
-	isExist, err := models.ExistArticleByID(id)
+	//isExist, err := models.ExistArticleByID(id)
+	articleService := article_service.Article{ID: id}
+	isExist, err := articleService.ExistByID()
 	if !isExist {
 		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
 		return
@@ -95,7 +107,8 @@ func GetArticle(ctx *gin.Context) {
 		return
 	}
 
-	data, err := models.GetArticle(id)
+	//data, err := models.GetArticle(id)
+	data, err := articleService.Get()
 	if err != nil {
 		G.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
 		return
@@ -142,19 +155,27 @@ func AddArticle(ctx *gin.Context) {
 		return
 	}
 
-	code = e.SUCCESS
-	data := make(D)
-	data["tag_id"] = tagId
-	data["title"] = title
-	data["desc"] = desc
-	data["content"] = content
-	data["created_by"] = createdBy
-	data["state"] = state
-	err = models.AddArticle(data)
+	articleService := article_service.Article{
+		TagID:     tagId,
+		Title:     title,
+		Desc:      desc,
+		Content:   content,
+		CreatedBy: createdBy,
+		State:     state,
+	}
+	err = articleService.Add()
+	//data := make(D)
+	//data["tag_id"] = tagId
+	//data["title"] = title
+	//data["desc"] = desc
+	//data["content"] = content
+	//data["created_by"] = createdBy
+	//data["state"] = state
+	//err = models.AddArticle(data)
 	if err != nil {
 		G.Response(http.StatusOK, e.ERROR_ADD_ARTICLE_FAIL, nil)
 	}
-	G.Response(http.StatusOK, code, nil)
+	G.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 // 修改文章
@@ -162,7 +183,7 @@ func EditArticle(ctx *gin.Context) {
 	G := app.Gin{C: ctx}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
-	TagId := com.StrTo(ctx.Query("tag_id")).MustInt()
+	tagId := com.StrTo(ctx.Query("tag_id")).MustInt()
 	title := ctx.Query("title")
 	desc := ctx.Query("desc")
 	content := ctx.Query("content")
@@ -198,24 +219,34 @@ func EditArticle(ctx *gin.Context) {
 		return
 	}
 
-	maps := make(map[string]interface{})
-	if TagId > 0 {
-		maps["tag_id"] = id
+	articleService := article_service.Article{
+		ID:         id,
+		TagID:      tagId,
+		Title:      title,
+		Desc:       desc,
+		Content:    content,
+		ModifiedBy: modifiedBy,
+		State:      state,
 	}
-	if title != "" {
-		maps["title"] = title
-	}
-	if desc != "" {
-		maps["desc"] = desc
-	}
-	if content != "" {
-		maps["content"] = content
-	}
-	if modifiedBy != "" {
-		maps["modified_by"] = modifiedBy
-	}
+	err = articleService.Edit()
 
-	err = models.EditArticle(id, maps)
+	//maps := make(map[string]interface{})
+	//if TagId > 0 {
+	//	maps["tag_id"] = id
+	//}
+	//if title != "" {
+	//	maps["title"] = title
+	//}
+	//if desc != "" {
+	//	maps["desc"] = desc
+	//}
+	//if content != "" {
+	//	maps["content"] = content
+	//}
+	//if modifiedBy != "" {
+	//	maps["modified_by"] = modifiedBy
+	//}
+	//err = models.EditArticle(id, maps)
 	if err != nil {
 		G.Response(http.StatusOK, e.ERROR_EDIT_ARTICLE_FAIL, nil)
 		return
@@ -243,8 +274,9 @@ func DeleteArticle(ctx *gin.Context) {
 		G.Response(http.StatusBadRequest, code, msg)
 		return
 	}
-
-	isExist, err := models.ExistArticleByID(id)
+	articleService := article_service.Article{ID: id}
+	isExist, err := articleService.ExistByID()
+	//isExist, err := models.ExistArticleByID(id)
 	if !isExist {
 		G.Response(http.StatusOK, e.ERROR_NOT_EXIST_ARTICLE, nil)
 		return
@@ -254,7 +286,8 @@ func DeleteArticle(ctx *gin.Context) {
 		return
 	}
 
-	err = models.DeleteArticle(id)
+	//err = models.DeleteArticle(id)
+	err = articleService.Delete()
 	if err != nil {
 		G.Response(http.StatusOK, e.ERROR_DELETE_ARTICLE_FAIL, nil)
 	}

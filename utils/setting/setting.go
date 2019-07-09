@@ -23,7 +23,7 @@ type Application struct {
 	LogSavePath string
 	LogFileName string
 	LogFileExt  string
-	TimeFormat   string
+	TimeFormat  string
 }
 
 var AppSetting = &Application{}
@@ -48,6 +48,16 @@ type Database struct {
 
 var DatabaseSetting = &Database{}
 
+type Redis struct {
+	Host        string
+	Password    string
+	MaxIdle     int
+	MaxActive   int
+	IdleTimeout time.Duration
+}
+
+var RedisSetting = &Redis{}
+
 func Setup() {
 	// 加载配置文件
 	var err error
@@ -66,7 +76,6 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("Cfg MapTo ServerSetting err: %v", err)
 	}
-
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second
 	ServerSetting.WriteTimeout = ServerSetting.WriteTimeout * time.Second
 
@@ -74,6 +83,12 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("Cfg MapTo DatabaseSetting err: %v", err)
 	}
+
+	err = Cfg.Section("redis").MapTo(RedisSetting)
+	if err != nil {
+		log.Fatalf("Cfg MapTo RedisSetting err: %v", err)
+	}
+	RedisSetting.IdleTimeout = RedisSetting.IdleTimeout * time.Second
 }
 
 //func LoadBase() {

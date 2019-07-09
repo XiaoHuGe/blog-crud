@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"xhblog/models"
 	"xhblog/routers"
+	"xhblog/utils/gredis"
 	"xhblog/utils/logging"
 	"xhblog/utils/setting"
 )
@@ -15,6 +16,7 @@ func main() {
 	setting.Setup()
 	models.Setup()
 	logging.Setup()
+	gredis.Setup()
 
 	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
 	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout

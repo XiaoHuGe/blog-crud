@@ -11,5 +11,6 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 Logs/
-upload/image/
-export/
+# resource/upload/images/*
+# resource/export/*
+# resource/qrcode/*

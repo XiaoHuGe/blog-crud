@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"xhblog/controller/v1/article"
 	"xhblog/controller/v1/auth"
+	"xhblog/controller/v1/poster"
 	"xhblog/controller/v1/tag"
 	"xhblog/controller/v1/upload"
 	"xhblog/middleware/xhjwt"
@@ -24,8 +25,8 @@ func InitRouter() *gin.Engine {
 			"message": "pong",
 		})
 	})
-	r.StaticFS("/upload/images", http.Dir(file.GetImagePath()))
-	r.StaticFS("/export", http.Dir(file.GetExclePath()))
+	r.StaticFS("/resource/upload/images", http.Dir(file.GetImagePath()))
+	r.StaticFS("/resource/export", http.Dir(file.GetExclePath()))
 	r.GET("/auth", auth.GetAuth)
 
 	apiv1 := r.Group("/api/v1")
@@ -56,6 +57,8 @@ func InitRouter() *gin.Engine {
 
 		apiv1.POST("tags/export", tag.ExportTag)
 		apiv1.POST("tags/import", tag.ImportTag)
+
+		apiv1.POST("poster/generate", poster.GenerateArticlePoster)
 	}
 
 	return r

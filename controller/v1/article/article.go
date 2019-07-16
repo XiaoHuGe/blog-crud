@@ -120,20 +120,23 @@ func GetArticle(ctx *gin.Context) {
 func AddArticle(ctx *gin.Context) {
 	G := &app.Gin{C: ctx}
 
-	tagId := com.StrTo(ctx.Query("tag_id")).MustInt()
-	title := ctx.Query("title")
-	desc := ctx.Query("desc")
-	content := ctx.Query("content")
-	createdBy := ctx.Query("created_by")
-	state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
+	//tagId := com.StrTo(ctx.Query("tag_id")).MustInt()
+	//title := ctx.Query("title")
+	//desc := ctx.Query("desc")
+	//content := ctx.Query("content")
+	//createdBy := ctx.Query("created_by")
+	//state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
+
+	addArticleService := article_service.AddArticleService{}
+	ctx.ShouldBind(&addArticleService)
 
 	valid := validation.Validation{}
-	valid.Min(tagId, 1, "tag_id").Message("标签id必须大于0")
-	valid.Required(title, "title").Message("标题不能为空")
-	valid.Required(desc, "desc").Message("描述不能为空")
-	valid.Required(content, "content").Message("内容不能为空")
-	valid.Required(createdBy, "created_by").Message("创建人不能为空")
-	valid.Range(state, 0, 1, "state").Message("状态只能为0或1")
+	valid.Min(addArticleService.TagID, 1, "tag_id").Message("标签id必须大于0")
+	valid.Required(addArticleService.Title, "title").Message("标题不能为空")
+	valid.Required(addArticleService.Desc, "desc").Message("描述不能为空")
+	valid.Required(addArticleService.Content, "content").Message("内容不能为空")
+	valid.Required(addArticleService.CreatedBy, "created_by").Message("创建人不能为空")
+	valid.Range(addArticleService.State, 0, 1, "state").Message("状态只能为0或1")
 
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
@@ -145,7 +148,7 @@ func AddArticle(ctx *gin.Context) {
 		return
 	}
 
-	isExist, err := models.ExistTagById(tagId)
+	isExist, err := models.ExistTagById(addArticleService.TagID)
 	if err != nil {
 		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
 		return
@@ -156,12 +159,12 @@ func AddArticle(ctx *gin.Context) {
 	}
 
 	articleService := article_service.Article{
-		TagID:     tagId,
-		Title:     title,
-		Desc:      desc,
-		Content:   content,
-		CreatedBy: createdBy,
-		State:     state,
+		TagID:     addArticleService.TagID,
+		Title:     addArticleService.Title,
+		Desc:      addArticleService.Desc,
+		Content:   addArticleService.Content,
+		CreatedBy: addArticleService.CreatedBy,
+		State:     addArticleService.State,
 	}
 	err = articleService.Add()
 	//data := make(D)
@@ -230,23 +233,6 @@ func EditArticle(ctx *gin.Context) {
 	}
 	err = articleService.Edit()
 
-	//maps := make(map[string]interface{})
-	//if TagId > 0 {
-	//	maps["tag_id"] = id
-	//}
-	//if title != "" {
-	//	maps["title"] = title
-	//}
-	//if desc != "" {
-	//	maps["desc"] = desc
-	//}
-	//if content != "" {
-	//	maps["content"] = content
-	//}
-	//if modifiedBy != "" {
-	//	maps["modified_by"] = modifiedBy
-	//}
-	//err = models.EditArticle(id, maps)
 	if err != nil {
 		G.Response(http.StatusOK, e.ERROR_EDIT_ARTICLE_FAIL, nil)
 		return

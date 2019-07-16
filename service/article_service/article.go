@@ -23,20 +23,32 @@ type Article struct {
 	ModifiedBy string
 }
 
+type AddArticleService struct {
+	TagID     int    `json:"tag_id"`
+	Title     string `json:"title"`
+	Desc      string `json:"desc"`
+	Content   string `json:"content"`
+	CreatedBy string `json:"created_by"`
+	State     int    `json:"state"`
+}
+
 func (this *Article) ExistByID() (bool, error) {
 	return models.ExistArticleByID(this.ID)
 
 }
 
 func (this *Article) Add() (error) {
-	data := make(map[string]interface{})
-	data["tag_id"] = this.TagID
-	data["title"] = this.Title
-	data["desc"] = this.Desc
-	data["content"] = this.Content
-	data["created_by"] = this.CreatedBy
-	data["state"] = this.State
-	return models.AddArticle(data)
+
+	addArticle := models.Article{
+		TagID:     this.TagID,
+		Title:     this.Title,
+		Desc:      this.Desc,
+		Content:   this.Content,
+		CreatedBy: this.CreatedBy,
+		State:     this.State,
+	}
+
+	return models.AddArticle(&addArticle)
 }
 
 func (this *Article) Get() (*models.Article, error) {
@@ -67,6 +79,7 @@ func (this *Article) Get() (*models.Article, error) {
 }
 
 var Key string;
+
 func (this *Article) GetAll() ([]*models.Article, error) {
 	var cacheArticle []*models.Article
 

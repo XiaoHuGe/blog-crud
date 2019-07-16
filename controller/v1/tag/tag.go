@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 	"xhblog/models"
+	"xhblog/service/tag_service"
 	"xhblog/utils/app"
 	"xhblog/utils/e"
 	"xhblog/utils/file"
@@ -58,17 +59,16 @@ func GetTags(ctx *gin.Context) {
 // 新增文章标签
 func AddTag(ctx *gin.Context) {
 	G := &app.Gin{C: ctx}
-	// 标签名称
-	name := ctx.Query("name")
-	state := com.StrTo(ctx.DefaultQuery("state", "0")).MustInt()
-	createdBy := ctx.Query("created_by")
+
+	tagService := tag_service.AddTagServer{}
+	ctx.ShouldBind(&tagService)
 
 	valid := validation.Validation{}
-	valid.Required(name, "name").Message("名称不能为空")
-	valid.MaxSize(name, 100, "name").Message("名称最长为100字符")
-	valid.Required(createdBy, "created_by").Message("创建人不能为空")
-	valid.MaxSize(createdBy, 20, "created_by").Message("创建人最长为20字符")
-	valid.Range(state, 0, 1, "state").Message("状态值允许0或1")
+	valid.Required(tagService.Name, "name").Message("名称不能为空")
+	valid.MaxSize(tagService.Name, 100, "name").Message("名称最长为100字符")
+	valid.Required(tagService.CreatedBy, "created_by").Message("创建人不能为空")
+	valid.MaxSize(tagService.CreatedBy, 20, "created_by").Message("创建人最长为20字符")
+	valid.Range(tagService.State, 0, 1, "state").Message("状态值允许0或1")
 
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
@@ -82,7 +82,7 @@ func AddTag(ctx *gin.Context) {
 	}
 
 	// 判断标签是否存在
-	isExist, err := models.ExistTagByName(name)
+	isExist, err := models.ExistTagByName(tagService.Name)
 	if err != nil {
 		G.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
 		return
@@ -92,7 +92,7 @@ func AddTag(ctx *gin.Context) {
 		return
 	}
 
-	err = models.AddTag(name, state, createdBy)
+	err = models.AddTag(tagService.Name, tagService.State, tagService.CreatedBy)
 	if err != nil {
 		G.Response(http.StatusInternalServerError, e.ERROR_ADD_TAG_FAIL, nil)
 		return
@@ -106,18 +106,21 @@ func EditTag(ctx *gin.Context) {
 	valid := validation.Validation{}
 
 	id := com.StrTo(ctx.Param("id")).MustInt()
-	name := ctx.Query("name")
-	modifiedBy := ctx.Query("modified_by")
+	editService := tag_service.EditTagServer{}
+	ctx.ShouldBind(&editService)
 
 	var state = -1
-	if arg := ctx.Query("state"); arg != "" {
-		state = com.StrTo(arg).MustInt()
+	//if arg := ctx.Query("state"); arg != "" {
+	if arg := com.StrTo(editService.State); arg != "" {
+		state = com.StrTo(editService.State).MustInt()
 		valid.Range(state, 0, 1, "state").Message("状态只允许0或1")
 	}
+
+	//}
 	valid.Required(id, "id").Message("id不能为空")
-	valid.Required(modifiedBy, "modified_by").Message("修改人不能为空")
-	valid.MaxSize(modifiedBy, 20, "modified_by").Message("修改人长度最多为20")
-	valid.MaxSize(name, 20, "name").Message("名称最多为20")
+	valid.Required(editService.ModifiedBy, "modified_by").Message("修改人不能为空")
+	valid.MaxSize(editService.ModifiedBy, 20, "modified_by").Message("修改人长度最多为20")
+	valid.MaxSize(editService.Name, 20, "name").Message("名称最多为20")
 
 	code := e.INVALID_PARAMS
 	if valid.HasErrors() {
@@ -140,9 +143,9 @@ func EditTag(ctx *gin.Context) {
 	}
 
 	data := make(map[string]interface{})
-	data["modified_by"] = modifiedBy
-	if name != "" {
-		data["name"] = name
+	data["modified_by"] = editService.ModifiedBy
+	if editService.Name != "" {
+		data["name"] = editService.Name
 	}
 	if state != -1 {
 		data["state"] = state
@@ -196,11 +199,7 @@ func DeleteTag(ctx *gin.Context) {
 // 导出标签
 func ExportTag(ctx *gin.Context) {
 	G := app.Gin{C: ctx}
-	//name := ctx.PostForm("name")
-	//state := -1
-	//if arg := ctx.PostForm("state"); arg != "" {
-	//	state = com.StrTo(arg).MustInt()
-	//}
+
 	tags, err := models.GetTags(util.GetPage(ctx), setting.AppSetting.PageSize, make(map[string]interface{}))
 
 	xlsxFile := xlsx.NewFile()
